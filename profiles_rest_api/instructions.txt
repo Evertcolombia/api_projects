@@ -66,3 +66,33 @@ and set in a new line the api app
 5- test the changes we did using django development server
 
     $ python3 manage.py runserver 0.0.0.0:8000
+
+
+6- Create user database models
+see file models.py and look for  models of UserProfile class
+
+
+7- add user model manager
+see file models.py and look for  models of UserProfileManager class
+
+8- set our custom user model
+configure our django project to use this model as default
+user model instead of the ones provided for django
+
+set the user model on settings.py at the bottom of the filecreate a new setting
+
+    arguments = name fo the app, name of the model
+    AUTH_USER_MODEL= 'profiles_api.UserProfile'
+
+9- create migrations fileand sync DB
+
+every time you change or add a model you need to create a
+new migration file
+
+    $ source ~/env/bin/activate
+    $ python manage.py makemigrations profiles_api
+
+    it will create a new migration file on migrations/
+
+now run all the migrations of our project
+    $ python manage.py migrate
