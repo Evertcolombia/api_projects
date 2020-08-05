@@ -131,3 +131,51 @@ for last thes the admin runing the server
     $ python manage.py runserver
 
     127.0.0.0.1:8000/admin and try to access
+
+
+12- Create API View
+
+go to views.py file and here do the changes
+remove all what is in the file
+
+    from rest_framework.views import APIView
+    from rest_framework.response import Response
+
+
+    class HelloApiView(APIView):
+        """Test API View"""
+
+        def get(self, request, format=None):
+            """Returns a list of APIView features"""
+            an_apiview = [
+                'Uses HTTP methods as function (get, post patch, put, delete)',
+                'Is similar to a traditional Django view',
+                'Gives you the most control over you application logic',
+                'Is mapped manually to URLS'
+            ]
+
+            return Response({'message': 'Hello!', 'an_apiview': an_apiview})
+
+13- Configure the view URL
+move to the profuiles_api folder who contains our api
+and create a new file urls.py
+
+    from django.urls import path
+    from profiles_api import views
+
+    urlpatterns = [
+        path('hello-view/', views.HelloApiView.as_view()),
+    ]
+
+now in the pricipal urls.py file in our project django
+use include function that let you include urls from
+other apps
+
+    from django.urls import path, include
+
+    #name of the folder to look in include argument
+    path('api/', include('profiles_api.urls))
+
+finally test our new view on serve, run server and go 
+to pat /api/hello-view, it must return and object with our response
+
