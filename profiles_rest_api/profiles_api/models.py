@@ -39,8 +39,8 @@ class UserProfileManager(BaseUserManager):
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     """Data model for the users profile in the system """
     email = models.EmailField(max_length=150, unique=True)
-    name = models.CharField(max_length=255),
-    is_active = models.BooleanField(default=True),
+    name = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
     # call custom model mannager for the user

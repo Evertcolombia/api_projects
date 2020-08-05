@@ -96,3 +96,38 @@ new migration file
 
 now run all the migrations of our project
     $ python manage.py migrate
+
+
+10- creating super user to use Django admin
+Django admin allows manage your database models
+
+making easy inspect the DB see models and modify them
+
+we need to create a super user
+user with the maximun privileges in our DB 
+
+do it useng DJango cli:
+
+    $ source ~/env/bin/activate
+    $ python manage.py createsuperuser
+
+    it will ask for email, name and password set your data
+    
+11- enabled django admin for our user profile
+go on profiles_api->admin.py
+
+impoer the models form this folder
+    from profiles_api import models
+
+then register the module
+    admin.site.register(models.userProfile)
+
+this tells Django admin to register oir user profile
+model with the admin site, sot it makes accesible throught
+the admin interface
+
+for last thes the admin runing the server
+
+    $ python manage.py runserver
+
+    127.0.0.0.1:8000/admin and try to access
