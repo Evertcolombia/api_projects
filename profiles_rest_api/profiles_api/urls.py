@@ -10,6 +10,7 @@ that doesn't have a query_set from the view that corresponds
 or if you want overwrite the query_set name"""
 router.register('hello-viewset', views.HelloViewSet, base_name="hello=viewset")
 router.register('profile', views.UserProfileViewSet)
+router.register('feed', views.UserProfileFeedViewSet)
 
 
 
