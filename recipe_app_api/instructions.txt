@@ -1,0 +1,68 @@
+1-Create Dockerfile
+
+create a docker file where our app wil run
+FROM python:3.7-alpine
+MAINTAINER EvertColombia
+
+# recomended in containers
+# avoid  python to buffer the outputs, prints it directly
+ENV PYTHONUNBUFFERED 1
+
+# Install all dependencies
+COPY ./requirements.txt /requirements.txt
+RUN pip install -r /requirements.txt
+
+# Create Folder to store app
+RUN mkdir /app
+WORKDIR /app
+COPY ./app /app
+
+# User that's going to run app -D
+RUN adduser -D user
+USER user
+
+2- create requirements file
+Django>=2.1.3,<2.2.0
+djangorestframework>=3.9.0,<3.11.0
+
+now run and build de image on root folder
+    $ docker build .
+
+3- Configure Docker Compose
+it allows us to easily manage the diffrents services that make up our project
+
+for example:
+    one service will be thepython backend app
+    one service will be the database
+
+create docker-compose.yml file at root
+
+# version of docker compose to use
+version: "3"
+
+# the services that will build
+services:
+  app: # name of the service
+    build:
+      context: . # current directory
+    ports:
+      - "8000:8000"
+    # the volume allows to get updates that we make to our project
+    # into docker image in real-time
+    volumes:
+      - ./app:/app # maps ./app from root to /app on image
+    command: > # " > = next line continue "
+      sh - c "python manage.py run server 0.0.0.0:8000"
+
+now save a run the docker compose
+    $ docker-compose build
+
+
+4- create a django project
+
+run the follow command
+
+    $ docker-compose run app sh -c "django-admin.py startproject app ."
+
+it creates our project on app folder as we said on command
+
