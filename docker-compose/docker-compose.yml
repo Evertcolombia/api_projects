@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  web: # web service uses image from current directory
+    build: .
+    ports:
+      - "5000:5000"
+  redis: # redis service use a public image
+    image: "redis:alpine"
