@@ -66,3 +66,147 @@ run the follow command
 
 it creates our project on app folder as we said on command
 
+
+5- Create Core app
+
+to create the core of our project sexecutes the
+follow command
+
+  $ docker-compose run app sh -c "python manage.py startapp core"
+
+it will create a core folder in app/core
+in this folder deletes the test.py and views.py files
+
+create a new folder tests in core folder and in tests a new file
+called __init__.py
+
+6- add tests for custom user model
+
+first add core add our installed_apps array in settings.py
+
+now in tests folder create a new file test_model.py
+
+  from django.test import TestCase
+  from django.contrib.auth import get_user_model
+
+  class ModelTests(TestCase):
+
+    def create_user_with_email_successful(self):
+        """Test creating a new user with an email is successful"""
+        email = 'evertescalante@gmail.com'
+        password = 'Lopegoalsoco123'
+        user = get_user_model().objects.create_user(
+            email=email,
+            password=password
+        )
+
+        self.assertEqual(user.email, email)
+        # use check_password cause password  will be hashed
+        self.assertTrue(user.check_password(password))
+
+now run the test
+
+  $ docker-compose run app sh -c "python manage.py test"
+
+7- Implement a custom user model
+
+go to models in app/core and do the follow
+
+  from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+
+  class UserManager(BaseUserManager):
+
+    def create_user(self, email, password=None, **extra_fields):
+      """Creates an saves a new user"""
+      user = self.model(email=email, **extra_fields)
+      user.set_password(password)
+      user.save(using=self._db)
+
+      return user
+
+  class User(AbstractBaseUser, PermissionsMixin):
+    """Custom user model that supports using email instead of username"""
+    email = models.EmailField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+    is_active = models.BooleanField(defult=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+
+now go to settings file and in the end Put
+
+  AUTH_USER_MODEL = 'core.User'
+
+now we need to do our migrations
+
+  $ docker-compose run app sh -c "python manage.py makemigrations core"
+
+and run the test again
+
+  $ docker-compose run app sh -c ""python manage.py test
+
+
+8- Normalize email adresses
+
+  in the test model file add a new test
+
+  def test_new_user_email_normalized(self):
+  """Test the email for a new user is normalized"""
+  email = 'test@OUTLOOK.ES'
+  user = get_user_model().objects.create_user(email, 'test123')
+
+  self.assertEqual(user.email, email.lower())
+
+nowadd this feature tothe UserManager model in the email BooleanField
+  email=email = email=self.normalize_email(email)
+
+
+run again the test command
+
+
+9- add validation for email field
+
+add a new test for  invalid user email
+
+  def test_new_user_email(self):
+  """Test creating user with not email raises error"""
+  with self.assertRaises(ValueError):
+    get_user_model().objects.create_user(None, 'test123')
+
+save and  go to models
+inn create_user  test the email
+  if not email:
+  raise ValueError("Users must have an email address")
+
+run again test you will see the error
+
+
+10- add support for creating a new superuser
+
+in the tes_models class
+
+  def test_create_new_superuser(self):
+    """Test creating a new superuser"""
+    user = get_user_model().objects.create_superuser(
+      'evertescalante@gmail.com',
+      'elvago123'
+    )
+
+    #superuser field is included as part of PermissionsMixin
+    self.assertTrue(user.is_superuser)
+    self.assertTrue(user.is_staff)
+
+now do de create_superuser function at UserManager
+
+  def create_superuser(self, email, password):
+    """Creates and savaes a new superuser"""
+    user = self.create_user(email, password)
+    user.is_staff = True
+    user.is_superuser = True
+    user.save(using=self._db)
+
+    return user
+
+back and run test again also with flake8 to see fails 
