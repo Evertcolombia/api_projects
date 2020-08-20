@@ -66,3 +66,259 @@ run the follow command
 
 it creates our project on app folder as we said on command
 
+
+5- Create Core app
+
+to create the core of our project sexecutes the
+follow command
+
+  $ docker-compose run app sh -c "python manage.py startapp core"
+
+it will create a core folder in app/core
+in this folder deletes the test.py and views.py files
+
+create a new folder tests in core folder and in tests a new file
+called __init__.py
+
+6- add tests for custom user model
+
+first add core add our installed_apps array in settings.py
+
+now in tests folder create a new file test_model.py
+
+  from django.test import TestCase
+  from django.contrib.auth import get_user_model
+
+  class ModelTests(TestCase):
+
+    def create_user_with_email_successful(self):
+        """Test creating a new user with an email is successful"""
+        email = 'evertescalante@gmail.com'
+        password = 'Lopegoalsoco123'
+        user = get_user_model().objects.create_user(
+            email=email,
+            password=password
+        )
+
+        self.assertEqual(user.email, email)
+        # use check_password cause password  will be hashed
+        self.assertTrue(user.check_password(password))
+
+now run the test
+
+  $ docker-compose run app sh -c "python manage.py test"
+
+7- Implement a custom user model
+
+go to models in app/core and do the follow
+
+  from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+
+  class UserManager(BaseUserManager):
+
+    def create_user(self, email, password=None, **extra_fields):
+      """Creates an saves a new user"""
+      user = self.model(email=email, **extra_fields)
+      user.set_password(password)
+      user.save(using=self._db)
+
+      return user
+
+  class User(AbstractBaseUser, PermissionsMixin):
+    """Custom user model that supports using email instead of username"""
+    email = models.EmailField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+    is_active = models.BooleanField(defult=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+
+now go to settings file and in the end Put
+
+  AUTH_USER_MODEL = 'core.User'
+
+now we need to do our migrations
+
+  $ docker-compose run app sh -c "python manage.py makemigrations core"
+
+and run the test again
+
+  $ docker-compose run app sh -c ""python manage.py test
+
+
+8- Normalize email adresses
+
+  in the test model file add a new test
+
+  def test_new_user_email_normalized(self):
+  """Test the email for a new user is normalized"""
+  email = 'test@OUTLOOK.ES'
+  user = get_user_model().objects.create_user(email, 'test123')
+
+  self.assertEqual(user.email, email.lower())
+
+nowadd this feature tothe UserManager model in the email BooleanField
+  email=email = email=self.normalize_email(email)
+
+
+run again the test command
+
+
+9- add validation for email field
+
+add a new test for  invalid user email
+
+  def test_new_user_email(self):
+  """Test creating user with not email raises error"""
+  with self.assertRaises(ValueError):
+    get_user_model().objects.create_user(None, 'test123')
+
+save and  go to models
+inn create_user  test the email
+  if not email:
+  raise ValueError("Users must have an email address")
+
+run again test you will see the error
+
+
+10- add support for creating a new superuser
+
+in the tes_models class
+
+  def test_create_new_superuser(self):
+    """Test creating a new superuser"""
+    user = get_user_model().objects.create_superuser(
+      'evertescalante@gmail.com',
+      'elvago123'
+    )
+
+    #superuser field is included as part of PermissionsMixin
+    self.assertTrue(user.is_superuser)
+    self.assertTrue(user.is_staff)
+
+now  create_superuser function at UserManager
+
+  def create_superuser(self, email, password):
+    """Creates and savaes a new superuser"""
+    user = self.create_user(email, password)
+    user.is_staff = True
+    user.is_superuser = True
+    user.save(using=self._db)
+
+    return user
+
+back and run test again also with flake8 to see fails 
+
+
+11- create a new test file in core/tests/test_admin.py
+
+  here we put the test for our admin view endpoint
+
+  from django.test import Client, TestCase
+  from django.contrib.auth import get_user_model
+  from django.urls import reverse
+
+  class AdminSiteTests(TestCase):
+
+    # setup function run before every test in this class
+    def setUp(self):
+      self.client = Client()
+      self.admin_user = get_user_model().objects.create_superuser(
+        email = 'admin@invent.com',
+        password = 'changethis'
+      )
+      self.client.force_login(self.admin_user)
+      self.user = self.get_user_model.objects.create_user(
+        email='test@invent.com',
+        password='changethis',
+        name='Test user full name'
+      )
+
+    # now create test for list Users
+    ded test_users_listed(self):
+      """Test that users are listed on user page"""
+      url = reverse('admin:core_user_change_list')
+      res = self.client.get(url)
+
+      self.assertContains(res, self.user.name)
+      self.assertContains(res, self.user.email)
+
+save and run the tasts again
+
+
+12- modify Django admin to list our custom user model
+
+we need to import the default django userAdmin and change some of the 
+classes variables to support 
+
+go to admin in core
+
+  from django.contrib import admin
+  from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
+  from core import models
+
+
+  class UserAdmin(BaseUserAdmin):
+    ordering = ['id']
+    list_display = ['email', 'name']
+
+  #register on django admin
+  admin.site.register(models.User, UserAdmin)
+
+run the test
+
+13 - modify django admin to support changin user model
+
+  first create a test that will run for change user on admin in test_admin file
+
+  def test_user_change_page(self):
+        """Tests that the user pages edit works"""
+        #/admin/core/user/args[id]
+        url = reverse('admin:core_user_change', args=[self.user.id])
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, 200)
+
+  now it will no works if not set up the fieldsets variable behavior
+  on admin.py
+
+  fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        (_('Personal Info'), {'fields': ('name', )}),
+        (
+            _('Permissions'),
+            {'fields': ('is_active', 'is_staff', 'is_superuser')}
+        ),
+        (_('Important dates'), {'fields': ('last_login',)})
+    )
+
+last run our tests to see it works
+
+
+14- modify django admin to support creating users
+
+first we need create a test to run when a user page is created
+  in test_admin.py
+
+    def test_create_user_page(self):
+      """Test that the create user page works"""
+      # /admin/core/user/add
+      url = reverse('admin:core_user_add')
+      self.client.get(url)
+
+      self.assertEqual(res.status_code, 200)
+
+run the test and seee the error, for unknow fieldname username
+we need change this behavior on our Admin class
+
+  add_fieldsets = (
+    (None, {
+      'clases': ('wide',),
+      'fields': ('email', 'password1', 'password2')
+    }),
+  )
+
+run the test again and see the changes
