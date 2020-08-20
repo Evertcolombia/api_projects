@@ -36,4 +36,3 @@ class ModelTests(TestCase):
         #superuser field is included as part of PermissionsMixin
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
-
