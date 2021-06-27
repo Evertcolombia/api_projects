@@ -1,6 +1,6 @@
 # django imports
-# from django.conf.urls.static import static
-# from django.conf import settings
+from django.conf.urls.static import static
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path
 
@@ -21,4 +21,4 @@ urlpatterns = [
     path('posts/', posts_views.list_posts),
     path('posts2/', posts_views.list_posts2),
 
-] # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

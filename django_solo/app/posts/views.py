@@ -39,4 +39,4 @@ def list_posts(request):
 
 def list_posts2(request):
     """ List existing posts and serves template """
-    return render(request, 'feed.html', {'posts': posts})
+    return render(request, 'posts/feed.html', {'posts': posts})
