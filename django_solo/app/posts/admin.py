@@ -6,14 +6,17 @@ from posts.models import Post
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     """ Post admin """
-    list_display = ('pk', 'title', 'user', 'created_at')
-    list_display_links = ('pk',)
-    list_editable = ('title',)
-
+    list_display = (
+        'id',
+        'user',
+        'title',
+        'created_at'
+    )
     search_fields = (
         'user__username',
-        'title'
+        'title',
+        'user__email'
     )
-
+    list_filter = ('created_at', 'updated_at')
 
 

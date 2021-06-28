@@ -1,5 +1,7 @@
 """ Posts Views """
+
 from datetime import datetime
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import HttpResponse
 
@@ -24,19 +26,8 @@ posts = [
     }
 ]
 
-
+# will use LOGIN_URL in settings if user isnt authenticated
+@login_required
 def list_posts(request):
-    """ List existing posts """
-    content = []
-    for post in posts:
-        content.append("""
-        <p><strong>{name}</strong></p>
-        <p><small>{user} -<i>{timestamp}</i></small></p>
-        <figure><img src="{picture}"/></figure>
-        """.format(**post))
-    return HttpResponse('<br>'.join(content))
-
-
-def list_posts2(request):
     """ List existing posts and serves template """
     return render(request, 'posts/feed.html', {'posts': posts})
