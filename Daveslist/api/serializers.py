@@ -1,12 +1,14 @@
 from rest_framework import serializers
-from api.models import User, Book
+from api.models import Owner, Book
 
-class UserSerializer(serializers.ModelSerializer):
+class OwnerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['id', 'email', 'author', 'created_date']
+        model = Owner
+        fields = ['id', 'username', 'author', 'password']
+        
 
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
-        fields = ['id', 'title', 'description', 'author', 'price', 'created_date']
+        fields = ['id', 'title', 'description', 'owner',\
+                    'price', 'created_at']
