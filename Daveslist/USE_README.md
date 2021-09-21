@@ -1,4 +1,4 @@
-# Davelist
+# Daveslist
 ------------
 
 # Installing
@@ -7,7 +7,13 @@
 # Docker-Compose
 
 ```
-docker-compose up -d
+$ docker-compose up -d
+$ docker-compose exec web bash
+$ cd Daveslist
+$ pip3 install -r requirements.txt
+$ python3 manage.py runserver 0.0.0.0:8000
+
+
 ```
 
 This command will sintall the docker env for our service
@@ -60,7 +66,7 @@ http get http://127.0.0.1:8000/api/books
 For this endpoints you will need generate a JWT
 
 - get Token
-ttp post http://127.0.0.1:8000/api/token/ username=evertcolombia password=changethis
+http post http://127.0.0.1:8000/api/token/ username=evertcolombia password=changethis
 
 - get user upladed books
 http get http://127.0.0.1:8000/api/my_books 'Authorization:Bearer eyJ0.....' \

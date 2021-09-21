@@ -3,3 +3,4 @@ djangorestframework==3.12.2
 httpie==2.4.0
 flake8>=3.8.0,<3.8.3
 djangorestframework-simplejwt
+
